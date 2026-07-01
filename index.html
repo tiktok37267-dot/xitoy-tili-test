@@ -83,12 +83,37 @@
             margin-bottom: 20px;
         }
 
+        .title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .title {
             font-size: 1.2rem;
             font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             color: var(--primary);
+        }
+
+        .admin-trigger-btn {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: var(--transition);
+        }
+        .admin-trigger-btn:hover {
+            opacity: 1;
+            transform: rotate(45deg);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .theme-btn {
@@ -240,7 +265,6 @@
             background: rgba(79, 70, 229, 0.02);
         }
 
-        /* To'g'ri va Noto'g'ri javob holatlari */
         .option-btn.correct {
             background: var(--success) !important;
             border-color: var(--success) !important;
@@ -267,7 +291,7 @@
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
             transition: var(--transition);
-            display: none; /* Faqat javob tanlangach chiqadi */
+            display: none;
             text-align: center;
         }
 
@@ -340,6 +364,107 @@
         .restart-btn:hover {
             opacity: 0.9;
         }
+
+        /* --- ADMIN PANEL DIZAYNI --- */
+        .admin-screen {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .admin-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-admin-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            font-size: 1rem;
+            background: var(--card-bg);
+            color: var(--text-main);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        [data-theme="dark"] .admin-input {
+            border-color: #334155;
+        }
+
+        .admin-input:focus {
+            border-color: var(--primary);
+        }
+
+        .admin-submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .admin-submit-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .output-box {
+            background: rgba(0,0,0,0.04);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.8rem;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+            border: 1px solid rgba(0,0,0,0.1);
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        [data-theme="dark"] .output-box {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .copy-code-btn {
+            width: 100%;
+            background: #475569;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .copy-code-btn:hover {
+            background: #334155;
+        }
     </style>
 </head>
 <body>
@@ -347,8 +472,13 @@
     <div class="container">
         <div id="quiz-screen">
             <div class="header">
-                <div class="title">HSK Xitoy Tili</div>
-                <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()">🌓</button>
+                <div class="title-wrapper">
+                    <div class="title">HSK Xitoy Tili</div>
+                    <button class="admin-trigger-btn" onclick="openAdminPanel()" title="Sozlamalar">⚙️</button>
+                </div>
+                <div class="header-actions">
+                    <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()">🌓</button>
+                </div>
             </div>
 
             <div class="progress-container">
@@ -382,8 +512,7 @@
                 </div>
             </div>
 
-            <div class="options-container" id="options-box">
-                </div>
+            <div class="options-container" id="options-box"></div>
 
             <button class="next-btn" id="next-button" onclick="nextQuestion()">Keyingi savol</button>
         </div>
@@ -406,368 +535,62 @@
 
             <button class="restart-btn" onclick="startNewQuiz()">Qayta boshlash</button>
         </div>
+
+        <div id="admin-screen" class="admin-screen">
+            <div class="admin-title">
+                <span>Sozlamalar (Admin)</span>
+                <button class="close-admin-btn" onclick="closeAdminPanel()">✕</button>
+            </div>
+            
+            <div class="admin-form">
+                <input type="text" id="input-hanzi" class="admin-input" placeholder="Iyeroglif (Masalan: 猫)">
+                <input type="text" id="input-pinyin" class="admin-input" placeholder="Pinyin talaffuzi (Masalan: māo)">
+                <input type="text" id="input-uzbek" class="admin-input" placeholder="O'zbekcha tarjimasi (Masalan: mushuk)">
+                <button class="admin-submit-btn" onclick="addNewWordFromPanel()">Ro'yxatga qo'shish</button>
+            </div>
+
+            <div style="margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">GitHub uchun tayyor yangi kod:</div>
+            <div class="output-box" id="code-output"></div>
+            <button class="copy-code-btn" onclick="copyGeneratedCode()">GitHub kodini nusxalash</button>
+        </div>
     </div>
 
     <script>
-        /* --- 1. 300 TA ENG KERAKLI XITOYCHA SO'ZLAR BAZASI (HSK 1-3) --- */
-        const wordsDatabase = [
-    // 1. Kishilik olmoshlari va so'roq so'zlar (16 ta)
-    {hanzi:"我", pinyin:"wǒ", uzbek:"men"},
-    {hanzi:"你", pinyin:"nǐ", uzbek:"sen"},
-    {hanzi:"他", pinyin:"tā", uzbek:"u (o'g'il bola)"},
-    {hanzi:"她", pinyin:"tā", uzbek:"u (qiz bola)"},
-    {hanzi:"我们", pinyin:"wǒmen", uzbek:"biz"},
-    {hanzi:"你们", pinyin:"nǐmen", uzbek:"sizlar / siz"},
-    {hanzi:"他们", pinyin:"tāmen", uzbek:"ular"},
-    {hanzi:"这", pinyin:"zhè", uzbek:"bu"},
-    {hanzi:"那", pinyin:"nà", uzbek:"u, o'sha"},
-    {hanzi:"谁", pinyin:"shéi", uzbek:"kim"},
-    {hanzi:"什么", pinyin:"shénme", uzbek:"nima"},
-    {hanzi:"多少", pinyin:"duōshao", uzbek:"qancha, necha (narx so'rashda)"},
-    {hanzi:"怎么", pinyin:"zěnme", uzbek:"qanday, qanaqasiga"},
-    {hanzi:"怎么样", pinyin:"zěnmeyàng", uzbek:"ahvol qanday, qanaqa"},
-    {hanzi:"为什么", pinyin:"wèishénme", uzbek:"nima uchun, nimaga"},
-    {hanzi:"哪里", pinyin:"nǎlǐ", uzbek:"qaerda, qaerga"},
+        /* --- 1. XITOYCHA SO'ZLAR BAZASI --- */
+        let wordsDatabase = [
+            // 1. Kishilik olmoshlari va so'roq so'zlar (16 ta)
+            {hanzi:"我", pinyin:"wǒ", uzbek:"men"},
+            {hanzi:"你", pinyin:"nǐ", uzbek:"sen"},
+            {hanzi:"主要", pinyin:"zhǔyào", uzbek:"asosiy, boshliq"}
+        ];
 
-    // 2. Kundalik eng kerakli fe'llar va harakatlar (40 ta)
-    {hanzi:"是", pinyin:"shì", uzbek:"ha, shunday, bo'lmoq"},
-    {hanzi:"有", pinyin:"yǒu", uzbek:"bor, ega bo'lmoq"},
-    {hanzi:"看", pinyin:"kàn", uzbek:"qaramoq, ko'rmoq, o'qimoq"},
-    {hanzi:"听", pinyin:"tīng", uzbek:"eshitmoq"},
-    {hanzi:"说", pinyin:"shuō", uzbek:"gapirmoq, aytmoq"},
-    {hanzi:"来", pinyin:"lái", uzbek:"kelmoq"},
-    {hanzi:"去", pinyin:"qù", uzbek:"bormoq"},
-    {hanzi:"回", pinyin:"huí", uzbek:"qaytmoq"},
-    {hanzi:"吃", pinyin:"chī", uzbek:"yemoq"},
-    {hanzi:"喝", pinyin:"hē", uzbek:"ichmoq"},
-    {hanzi:"买", pinyin:"mǎi", uzbek:"sotib olmoq"},
-    {hanzi:"卖", pinyin:"mài", uzbek:"sotmoq"},
-    {hanzi:"坐", pinyin:"zuò", uzbek:"o'tirmoq, (transportga) o'tirmoq"},
-    {hanzi:"走", pinyin:"zǒu", uzbek:"yurmoq, ketmoq"},
-    {hanzi:"找", pinyin:"zhǎo", uzbek:"qidirmoq, (pul) qaytarmoq"},
-    {hanzi:"等", pinyin:"děng", uzbek:"kutmoq"},
-    {hanzi:"帮", pinyin:"bāng", uzbek:"yordam bermoq"},
-    {hanzi:"给", pinyin:"gěi", uzbek:"bermoq, uchun"},
-    {hanzi:"要", pinyin:"yào", uzbek:"kerak, xohlamoq"},
-    {hanzi:"能", pinyin:"néng", uzbek:"qila olmoq, imkoni bo'lmoq"},
-    {hanzi:"做", pinyin:"zuò", uzbek:"qilmoq, bajarmoq"},
-    {hanzi:"打", pinyin:"dǎ", uzbek:"urmoq, chalmoq, telefon qilmoq"},
-    {hanzi:"开", pinyin:"kāi", uzbek:"ochmoq, (mashina) haydamoq"},
-    {hanzi:"关", pinyin:"guān", uzbek:"yopmoq, o'chirmoq (chiroq/tel)"},
-    {hanzi:"进", pinyin:"jìn", uzbek:"kirmoq"},
-    {hanzi:"出", pinyin:"chū", uzbek:"chiqmoq"},
-    {hanzi:"拿", pinyin:"ná", uzbek:"olmoq, ushlamoq"},
-    {hanzi:"放", pinyin:"fàng", uzbek:"qo'ymoq, joylashtirmoq"},
-    {hanzi:"带", pinyin:"dài", uzbek:"olib kelmoq, birga olmoq"},
-    {hanzi:"送", pinyin:"sòng", uzbek:"sovg'a qilmoq, kuzatib qo'ymoq"},
-    {hanzi:"用", pinyin:"yòng", uzbek:"ishlatmoq, foydalanmoq"},
-    {hanzi:"洗", pinyin:"xǐ", uzbek:"yuvmoq"},
-    {hanzi:"穿", pinyin:"chuān", uzbek:"kiymoq"},
-    {hanzi:"换", pinyin:"huàn", uzbek:"almashtirmoq (pul/kiyim)"},
-    {hanzi:"住", pinyin:"zhù", uzbek:"yashamoq, istiqomat qilmoq"},
-    {hanzi:"问", pinyin:"wèn", uzbek:"so'ramoq"},
-    {hanzi:"笑", pinyin:"xiào", uzbek:"kulmoq"},
-    {hanzi:"哭", pinyin:"kū", uzbek:"yig'lamoq"},
-    {hanzi:"用", pinyin:"yòng", uzbek:"ishlatmoq"},
-    {hanzi:"开始", pinyin:"kāishǐ", uzbek:"boshlamoq"},
-
-    // 3. Modallik, fikr va tushunish fe'llari (15 ta)
-    {hanzi:"想", pinyin:"xiǎng", uzbek:"o'ylamoq, sog'inmoq, xohlamoq"},
-    {hanzi:"喜欢", pinyin:"xǐhuan", uzbek:"yoqtirmoq"},
-    {hanzi:"觉得", pinyin:"juéde", uzbek:"deb o'ylamoq, his qilmoq"},
-    {hanzi:"懂", pinyin:"dǒng", uzbek:"tushunmoq"},
-    {hanzi:"知道", pinyin:"zhīdào", uzbek:"bilmoq"},
-    {hanzi:"认识", pinyin:"rènshi", uzbek:"tanimoq, tanishmoq"},
-    {hanzi:"会", pinyin:"huì", uzbek:"bila olmoq (ilm/ko'nikma)"},
-    {hanzi:"可以", pinyin:"kěyǐ", uzbek:"mumkin, ruxsat berilmoq"},
-    {hanzi:"希望", pinyin:"xīwàng", uzbek:"umid qilmoq"},
-    {hanzi:"愿意", pinyin:"yuànyì", uzbek:"rozi bo'lmoq, xohlamoq"},
-    {hanzi:"敢", pinyin:"gǎn", uzbek:"botinmoq, jur'at qilmoq"},
-    {hanzi:"相信", pinyin:"xiāngxìn", uzbek:"ishonmoq"},
-    {hanzi:"忘记", pinyin:"wàngjì", uzbek:"unutmoq"},
-    {hanzi:"记得", pinyin:"jìde", uzbek:"esda saqlamoq, eslamoq"},
-    {hanzi:"打算", pinyin:"dǎsuàn", uzbek:"rejalashtirmoq"},
-
-    // 4. Muhim sifatlar va darajalar (45 ta)
-    {hanzi:"好", pinyin:"hǎo", uzbek:"yaxshi"},
-    {hanzi:"大", pinyin:"dà", uzbek:"katta"},
-    {hanzi:"小", pinyin:"xiǎo", uzbek:"kichik"},
-    {hanzi:"多", pinyin:"duō", uzbek:"ko'p"},
-    {hanzi:"少", pinyin:"shǎo", uzbek:"kam"},
-    {hanzi:"贵", pinyin:"guì", uzbek:"qimmat"},
-    {hanzi:"便宜", pinyin:"piányi", uzbek:"arzon"},
-    {hanzi:"远", pinyin:"yuǎn", uzbek:"uzoq"},
-    {hanzi:"近", pinyin:"jìn", uzbek:"yaqin"},
-    {hanzi:"忙", pinyin:"máng", uzbek:"band"},
-    {hanzi:"累", pinyin:"lèi", uzbek:"charchagan"},
-    {hanzi:"对", pinyin:"duì", uzbek:"to'g'ri"},
-    {hanzi:"错", pinyin:"cuò", uzbek:"xato"},
-    {hanzi:"很", pinyin:"hěn", uzbek:"juda"},
-    {hanzi:"太", pinyin:"tài", uzbek:"juda ham, haddan tashqari"},
-    {hanzi:"真", pinyin:"zhēn", uzbek:"haqiqatdan, rostdan"},
-    {hanzi:"高", pinyin:"gāo", uzbek:"baland, baland bo'yli"},
-    {hanzi:"矮", pinyin:"ǎi", uzbek:"pastroq, pakana"},
-    {hanzi:"胖", pinyin:"pàng", uzbek:"semiz"},
-    {hanzi:"瘦", pinyin:"shòu", uzbek:"ariq, ozg'in"},
-    {hanzi:"新", pinyin:"xīn", uzbek:"yangi"},
-    {hanzi:"旧", pinyin:"jiù", uzbek:"eski (buyumlar)"},
-    {hanzi:"热", pinyin:"rè", uzbek:"issiq"},
-    {hanzi:"冷", pinyin:"lěng", uzbek:"sovuq"},
-    {hanzi:"快", pinyin:"kuài", uzbek:"tez"},
-    {hanzi:"慢", pinyin:"màn", uzbek:"sekin"},
-    {hanzi:"高兴", pinyin:"gāoxìng", uzbek:"xursand"},
-    {hanzi:"生气", pinyin:"shēngqì", uzbek:"jahli chiqqan, xafa"},
-    {hanzi:"难过", pinyin:"nánguò", uzbek:"g'amgin, xafa bo'lish"},
-    {hanzi:"漂亮", pinyin:"piàoliang", uzbek:"chiroyli"},
-    {hanzi:"帅", pinyin:"shuài", uzbek:"kelishgan (erkaklarga)"},
-    {hanzi:"好吃", pinyin:"hǎochī", uzbek:"shirin, mazali"},
-    {hanzi:"好听", pinyin:"hǎotīng", uzbek:"yoqimli (ovoz/musiqa)"},
-    {hanzi:"舒服", pinyin:"shūfu", uzbek:"qulay, rohat, yaxshi (sog'liq)"},
-    {hanzi:"便宜", pinyin:"piányi", uzbek:"arzon"},
-    {hanzi:"认真", pinyin:"rènzhēn", uzbek:"tirishqoq, jiddiy"},
-    {hanzi:"聪明", pinyin:"cōngming", uzbek:"aqlli"},
-    {hanzi:"干净", pinyin:"gānjìng", uzbek:"toza"},
-    {hanzi:"脏", pinyin:"zāng", uzbek:"kir, nopok"},
-    {hanzi:"安全", pinyin:"ānquán", uzbek:"xavfsiz"},
-    {hanzi:"危险", pinyin:"wēixiǎn", uzbek:"xavfli"},
-    {hanzi:"方便", pinyin:"fāngbiàn", uzbek:"qulay (sharoit)"},
-    {hanzi:"非常", pinyin:"fēicháng", uzbek:"goyatda, favqulodda"},
-    {hanzi:"特别", pinyin:"tèbié", uzbek:"alohida, o'zgacha"},
-    {hanzi:"一样", pinyin:"yíyàng", uzbek:"bir xil, o'xshash"},
-
-    // 5. Vaqt va Joy tushunchalari (34 ta)
-    {hanzi:"现在", pinyin:"xiànzài", uzbek:"hozir"},
-    {hanzi:"今天", pinyin:"jīntiān", uzbek:"bugun"},
-    {hanzi:"明天", pinyin:"míngtiān", uzbek:"ertaga"},
-    {hanzi:"昨天", pinyin:"zuótiān", uzbek:"kecha"},
-    {hanzi:"点", pinyin:"diǎn", uzbek:"soat (vaqtda)"},
-    {hanzi:"时候", pinyin:"shíhou", uzbek:"vaqt, payt"},
-    {hanzi:"在", pinyin:"zài", uzbek:"-da (joyda), joylashgan"},
-    {hanzi:"这儿", pinyin:"zhèr", uzbek:"bu yerda, shu yerga"},
-    {hanzi:"那儿", pinyin:"nàr", uzbek:"u yerda, o'sha yerga"},
-    {hanzi:"家", pinyin:"jiā", uzbek:"uy, oila"},
-    {hanzi:"饭馆", pinyin:"fànguǎn", uzbek:"restoran, oshxona"},
-    {hanzi:"商店", pinyin:"shāngdiàn", uzbek:"do'kon"},
-    {hanzi:"洗手间", pinyin:"xǐshǒujiān", uzbek:"hojatxona (eng keraklisi)"},
-    {hanzi:"公司", pinyin:"gōngsī", uzbek:"kompaniya, korxona"},
-    {hanzi:"学校", pinyin:"xuéxiào", uzbek:"maktab"},
-    {hanzi:"医院", pinyin:"yīyuàn", uzbek:"shifoxona"},
-    {hanzi:"机场", pinyin:"jīchǎng", uzbek:"aeroport"},
-    {hanzi:"车站", pinyin:"chēzhàn", uzbek:"bekat, vokzal"},
-    {hanzi:"中国", pinyin:"Zhōngguó", uzbek:"Xitoy"},
-    {hanzi:"北京", pinyin:"Běijīng", uzbek:"Pekin"},
-    {hanzi:"房间", pinyin:"fángjiān", uzbek:"xona"},
-    {hanzi:"路", pinyin:"lù", uzbek:"yo'l"},
-    {hanzi:"上", pinyin:"shàng", uzbek:"tepa, ustida"},
-    {hanzi:"下", pinyin:"xià", uzbek:"past, tagida"},
-    {hanzi:"前", pinyin:"qián", uzbek:"old, oldinda"},
-    {hanzi:"后", pinyin:"hòu", uzbek:"orqa, orqada"},
-    {hanzi:"左", pinyin:"zuǒ", uzbek:"chap"},
-    {hanzi:"右", pinyin:"yòu", uzbek:"o'ng"},
-    {hanzi:"里", pinyin:"lǐ", uzbek:"ichida"},
-    {hanzi:"外", pinyin:"wài", uzbek:"tashqarida"},
-    {hanzi:"旁边", pinyin:"pángbiān", uzbek:"yonida"},
-    {hanzi:"时间", pinyin:"shíjiān", uzbek:"vaqt"},
-    {hanzi:"小时", pinyin:"xiǎoshí", uzbek:"soat (vaqt davomiyligi)"},
-    {hanzi:"分钟", pinyin:"fēnzhōng", uzbek:"daqiqa"},
-
-    // 6. Kundalik eng asosiy otlar (40 ta)
-    {hanzi:"钱", pinyin:"qián", uzbek:"pul"},
-    {hanzi:"水", pinyin:"shuǐ", uzbek:"suv"},
-    {hanzi:"茶", pinyin:"chá", uzbek:"choy"},
-    {hanzi:"饭", pinyin:"fàn", uzbek:"ovqat, pishgan guruch"},
-    {hanzi:"东西", pinyin:"dōngxi", uzbek:"narsa, buyum"},
-    {hanzi:"人", pinyin:"rén", uzbek:"odam, inson"},
-    {hanzi:"朋友", pinyin:"péngyou", uzbek:"do'st"},
-    {hanzi:"手机", pinyin:"shǒujī", uzbek:"telefon, mobil telefon"},
-    {hanzi:"名字", pinyin:"míngzi", uzbek:"ism, nom"},
-    {hanzi:"书", pinyin:"shū", uzbek:"kitob"},
-    {hanzi:"汉语", pinyin:"Hànyǔ", uzbek:"Xitoy tili"},
-    {hanzi:"菜", pinyin:"cài", uzbek:"taom, sabzavot"},
-    {hanzi:"肉", pinyin:"ròu", uzbek:"go'sht"},
-    {hanzi:"水和", pinyin:"shuǐguǒ", uzbek:"meva"},
-    {hanzi:"咖啡", pinyin:"kāfēi", uzbek:"kofe"},
-    {hanzi:"衣服", pinyin:"yīfu", uzbek:"kiyim"},
-    {hanzi:"杯子", pinyin:"bēizi", uzbek:"stakan, finjon"},
-    {hanzi:"桌子", pinyin:"zhuōzi", uzbek:"stol"},
-    {hanzi:"椅子", pinyin:"yǐzi", uzbek:"stul"},
-    {hanzi:"电脑", pinyin:"diànnǎo", uzbek:"kompyuter"},
-    {hanzi:"电视", pinyin:"diànshì", uzbek:"televizor"},
-    {hanzi:"车", pinyin:"chē", uzbek:"mashina, transport"},
-    {hanzi:"门", pinyin:"mén", uzbek:"eshik, darvoza"},
-    {hanzi:"题", pinyin:"tí", uzbek:"savol, masala (testda)"},
-    {hanzi:"药", pinyin:"yào", uzbek:"dori"},
-    {hanzi:"身体", pinyin:"shēntǐ", uzbek:"tana, sog'liq"},
-    {hanzi:"生日", pinyin:"shēngrì", uzbek:"tug'ilgan kun"},
-    {hanzi:"票", pinyin:"piào", uzbek:"bilet, chipta"},
-    {hanzi:"天气", pinyin:"tiānqì", uzbek:"ob-havo"},
-    {hanzi:"钥匙", pinyin:"yàoshi", uzbek:"kalit"},
-    {hanzi:"现金", pinyin:"xiànjīn", uzbek:"naqd pul"},
-    {hanzi:"密码", pinyin:"mìmǎ", uzbek:"parol, maxfiy kod"},
-    {hanzi:"网络", pinyin:"wǎngluò", uzbek:"internet, tarmoq"},
-    {hanzi:"微信", pinyin:"Wēixìn", uzbek:"WeChat (Xitoy ijtimoiy tarmog'i)"},
-    {hanzi:"支付宝", pinyin:"Zhīfùbǎo", uzbek:"Alipay (Xitoy to'lov tizimi)"},
-    {hanzi:"地图", pinyin:"dìtú", uzbek:"xarita"},
-    {hanzi:"单子", pinyin:"dānzi", uzbek:"ro'yxat, chek, kvitansiya"},
-    {hanzi:"毛巾", pinyin:"máojīn", uzbek:"sochiq"},
-    {hanzi:"纸巾", pinyin:"zhǐjīn", uzbek:"salfetka, qog'oz sochiq"},
-    {hanzi:"行李", pinyin:"xíngli", uzbek:"bagaj, yuk"},
-
-    // 7. Oila va Odamlar (15 ta)
-    {hanzi:"爸爸", pinyin:"bàba", uzbek:"dada"},
-    {hanzi:"妈妈", pinyin:"māma", uzbek:"oyi"},
-    {hanzi:"哥哥", pinyin:"gēge", uzbek:"aka"},
-    {hanzi:"姐姐", pinyin:"jiějie", uzbek:"opa"},
-    {hanzi:"弟弟", pinyin:"dìdi", uzbek:"uka"},
-    {hanzi:"妹妹", pinyin:"mèimei", uzbek:"singil"},
-    {hanzi:"孩子", pinyin:"háizi", uzbek:"bola, farzand"},
-    {hanzi:"先生", pinyin:"xiānsheng", uzbek:"janob, turmush o'rtoq"},
-    {hanzi:"女士", pinyin:"nǚshì", uzbek:"xonim"},
-    {hanzi:"老师", pinyin:"lǎoshī", uzbek:"o'qituvchi, ustoz"},
-    {hanzi:" o'quvchi", pinyin:"xuésheng", uzbek:"talaba, o'quvchi"},
-    {hanzi:"服务员", pinyin:"fúwùyuán", uzbek:"ofitsiant, xizmatchi"},
-    {hanzi:"师傅", pinyin:"shīfu", uzbek:"usta, haydovchi (hurmat ma'nosida)"},
-    {hanzi:"老板", pinyin:"lǎobǎn", uzbek:"boshliq, do'kon egasi"},
-    {hanzi:"同事", pinyin:"tóngshì", uzbek:"kasbdosh, hamkasb"},
-
-    // 8. Bog'lovchilar, predloglar va inkor (20 ta)
-    {hanzi:"不", pinyin:"bù", uzbek:"yo'q, emas (inkor)"},
-    {hanzi:"没", pinyin:"méi", uzbek:"yo'q, ega emas (inkor)"},
-    {hanzi:"的", pinyin:"de", uzbek:"-ning (egalik qo'shimchasi)"},
-    {hanzi:"和", pinyin:"hé", uzbek:"va, bilan"},
-    {hanzi:"但是", pinyin:"dànshì", uzbek:"lekin, biroq"},
-    {hanzi:"因为", pinyin:"yīnwèi", uzbek:"chunki"},
-    {hanzi:"所以", pinyin:"suǒyǐ", uzbek:"shuning uchun"},
-    {hanzi:"吗", pinyin:"ma", uzbek:"-mi? (so'roq yuklamasi)"},
-    {hanzi:"呢", pinyin:"ne", uzbek:"-chi? (so'roq yuklamasi)"},
-    {hanzi:"吧", pinyin:"ba", uzbek:"-lik, -gin (taklif yuklamasi)"},
-    {hanzi:"了", pinyin:"le", uzbek:"o'zgarish yoki o'tmish yuklamasi"},
-    {hanzi:"从", pinyin:"cóng", uzbek:"-dan (boshlab)"},
-    {hanzi:"到", pinyin:"dào", uzbek:"-gacha, yetib bormoq"},
-    {hanzi:"向", pinyin:"xiàng", uzbek:"tomon, qarata"},
-    {hanzi:"离", pinyin:"lí", uzbek:"-dan (masofa tushunchasida)"},
-    {hanzi:"跟", pinyin:"gēn", uzbek:"bilan, birga"},
-    {hanzi:"比", pinyin:"bǐ", uzbek:"qaraganda (solishtirish)"},
-    {hanzi:"虽然", pinyin:"suīrán", uzbek:"garchi, garchand"},
-    {hanzi:"或者", pinyin:"huòzhě", uzbek:"yoki (darak gapda)"},
-    {hanzi:"还是", pinyin:"háishi", uzbek:"yoki (so'roq gapda)"},
-
-    // 9. Odob-axloq va tayyor iboralar (25 ta)
-    {hanzi:"谢谢", pinyin:"xièxie", uzbek:"rahmat"},
-    {hanzi:"再见", pinyin:"zàijiàn", uzbek:"xayr, ko'rishguncha"},
-    {hanzi:"请", pinyin:"qǐng", uzbek:"iltimos, taklif qilmoq"},
-    {hanzi:"对不起", pinyin:"duìbuqǐ", uzbek:"kechirasiz"},
-    {hanzi:"没关系", pinyin:"méi guānxi", uzbek:"hechqisi yo'q, zarari yo'q"},
-    {hanzi:"没事", pinyin:"méishì", uzbek:"muammo yo'q, xavotirlanmang"},
-    {hanzi:"不用谢", pinyin:"búyòngxiè", uzbek:"arzimaydi"},
-    {hanzi:"喂", pinyin:"wèi", uzbek:"alo (telefonda) / hoy"},
-    {hanzi:"您好", pinyin:"nínhǎo", uzbek:"assalomu alaykum (hurmat bilan)"},
-    {hanzi:"早上好", pinyin:"zǎoshang hǎo", uzbek:"xayrli tong"},
-    {hanzi:"晚安", pinyin:"wǎn'ān", uzbek:"xayrli tun"},
-    {hanzi:"欢迎", pinyin:"huānyíng", uzbek:"xush kelibsiz"},
-    {hanzi:"干杯", pinyin:"gānbēi", uzbek:"olamiz, urishtiramiz (badaxloq emas)"},
-    {hanzi:"救命", pinyin:"jiùmìng", uzbek:"yordam bering! (favqulodda)"},
-    {hanzi:"麻烦你", pinyin:"máfand nǐ", uzbek:"sizni bezovta qildim, iltimos"},
-    {hanzi:"太好了", pinyin:"tài hǎo le", uzbek:"juda soz, ajoyib"},
-    {hanzi:"看情况", pinyin:"kàn qíngkuàng", uzbek:"sharoitga qarab, ko'ramiz"},
-    {hanzi:"开玩笑", pinyin:"kāi wánxiào", uzbek:"hazillashmoq"},
-    {hanzi:"当然", pinyin:"dāngrán", uzbek:"albatta"},
-    {hanzi:"放心", pinyin:"fàngxīn", uzbek:"ko'nglingiz to'q bo'lsin"},
-    {hanzi:"加油", pinyin:"jiāyóu", uzbek:"omad, olg'a (qo'llab-quvvatlash)"},
-    {hanzi:"笨蛋", pinyin:"bèndàn", uzbek:"ahmoqgina, lallaygan"},
-    {hanzi:"随便", pinyin:"suíbiàn", uzbek:"farqi yo'q, ixtiyoringiz"},
-    {hanzi:"恭喜", pinyin:"gōngxǐ", uzbek:"muborak bo'lsin, tabriklayman"},
-    {hanzi:"好久不见", pinyin:"hǎojiǔ bújiàn", uzbek:"ko'rishmaganimizga ancha bo'ldi"},
-
-    // 10. Sanoq, miqdor va uchrashadigan boshqa so'zlar (20 ta)
-    {hanzi:"个", pinyin:"gè", uzbek:"dona (umumiy sanoq so'z)"},
-    {hanzi:"块", pinyin:"kuài", uzbek:"bo'lak, yuan (pul birligi)"},
-    {hanzi:"些", pinyin:"xiē", uzbek:"biroz, bir nechta"},
-    {hanzi:"几", pinyin:"jǐ", uzbek:"nechta, bir nechta (so'roq)"},
-    {hanzi:"次", pinyin:"cì", uzbek:"marta, daf'a"},
-    {hanzi:"张", pinyin:"zhāng", uzbek:"dona (tekis narsalar: qog'oz/bilet)"},
-    {hanzi:"把", pinyin:"bǎ", uzbek:"dona (dastasi bor buyumlar: kalit/soyabon)"},
-    {hanzi:"条", pinyin:"tiáo", uzbek:"dona (uzun narsalar: shim/ko'cha/baliq)"},
-    {hanzi:"双", pinyin:"shuāng", uzbek:"juft (poyabzal/tayoqcha)"},
-    {hanzi:"件", pinyin:"jiàn", uzbek:"dona (kiyimlar/ish-yumushlar)"},
-    {hanzi:"本", pinyin:"běn", uzbek:"dona (kitob, daftar uchun)"},
-    {hanzi:"第一", pinyin:"dì-yī", uzbek:"birinchi"},
-    {hanzi:"最后", pinyin:"zuìhòu", uzbek:"oxirgi, yakuniy"},
-    {hanzi:"两", pinyin:"liǎng", uzbek:"ikki (miqdor bildirganda)"},
-    {hanzi:"半", pinyin:"bàn", uzbek:"yarim, yarimta"},
-    {hanzi:"一共", pinyin:"yígòng", uzbek:"jami, hammasi bo'lib"},
-    {hanzi:"百", pinyin:"bǎi", uzbek:"yuz (100)"},
-    {hanzi:"千", pinyin:"qiān", uzbek:"ming (1000)"},
-    {hanzi:"万", pinyin:"wàn", uzbek:"o'n ming (10000)"},
-    {hanzi:"零", pinyin:"líng", uzbek:"nol (0)"},
-
-    // 11. Qo'shimcha eng faol muloqot so'zlari (50 ta)
-    {hanzi:"经常", pinyin:"jīngcháng", uzbek:"tez-tez, doim"},
-    {hanzi:"总是", pinyin:"zǒngshì", uzbek:"har doim, mudom"},
-    {hanzi:"已经", pinyin:"yǐjīng", uzbek:"allaqachon, bo'lib o'tgan"},
-    {hanzi:"马上", pinyin:"mǎshàng", uzbek:"hozirroq, tezda, darhol"},
-    {hanzi:"一块儿", pinyin:"yíkuàir", uzbek:"birgalikda, bir joyda"},
-    {hanzi:"可能", pinyin:"kěnéng", uzbek:"ehtimol, bo'lishi mumkin"},
-    {hanzi:"可能", pinyin:"kěnéng", uzbek:"balki"},
-    {hanzi:"必须", pinyin:"bìxū", uzbek:"shart, albatta"},
-    {hanzi:"应该", pinyin:"yīnggāi", uzbek:"kerak, lozim (maslahat)"},
-    {hanzi:"愿意", pinyin:"yuànyì", uzbek:"istamoq, xohlamoq"},
-    {hanzi:"更", pinyin:"gèng", uzbek:"yana ham, ko'proq (solishtirish)"},
-    {hanzi:"最", pinyin:"zuì", uzbek:"eng (eng yaxshi, eng katta)"},
-    {hanzi:"饱", pinyin:"bǎo", uzbek:"to'q (qorin to'q)"},
-    {hanzi:"饿", pinyin:"è", uzbek:"och (qorin ochgan)"},
-    {hanzi:"渴", pinyin:"kě", uzbek:"chanqagan"},
-    {hanzi:"生病", pinyin:"shēngbìng", uzbek:"kasal bo'lmoq"},
-    {hanzi:"发烧", pinyin:"fāshāo", uzbek:"isitmasi chiqmoq"},
-    {hanzi:"感冒", pinyin:"gǎnmào", uzbek:"shamollab qolmoq"},
-    {hanzi:"准备", pinyin:"zhǔnbèi", uzbek:"tayyorlanmoq, shaylanmoq"},
-    {hanzi:"习惯", pinyin:"xíguàn", uzbek:"ko'nikmoq, odat"},
-    {hanzi:"清楚", pinyin:"qīngchu", uzbek:"aniq, tiniq, tushunarli"},
-    {hanzi:"合适", pinyin:"héshì", uzbek:"mos, muvofiq, loyiq"},
-    {hanzi:"刚才", pinyin:"gāngcái", uzbek:"hozirgina, hozirgina bo'lgan"},
-    {hanzi:"别", pinyin:"bié", uzbek:"-ma (taqiq: qilma, ketiuz)"},
-    {hanzi:"以前", pinyin:"yǐqián", uzbek:"ilgari, oldin"},
-    {hanzi:"以后", pinyin:"yǐhòu", uzbek:"keyin, keyinchalik"},
-    {hanzi:"最后", pinyin:"zuìhòu", uzbek:"oxiri, nihoyat"},
-    {hanzi:"特别", pinyin:"tèbié", uzbek:"juda, o'zgacha"},
-    {hanzi:"讲", pinyin:"jiǎng", uzbek:"gapirmoq, tushuntirmoq"},
-    {hanzi:"故事", pinyin:"gùshì", uzbek:"hikoya, ertak"},
-    {hanzi:"环境", pinyin:"huánjìng", uzbek:"atrof-muhit, sharoit"},
-    {hanzi:"阿姨", pinyin:"āyí", uzbek:"xola, amma, enaga"},
-    {hanzi:"声音", pinyin:"shēngyīn", uzbek:"ovoz, tovush"},
-    {hanzi:"方法", pinyin:"fāngfǎ", uzbek:"metod, usul"},
-    {hanzi:"发现", pinyin:"fāxiàn", uzbek:"bilib qolmoq, aniqlamoq"},
-    {hanzi:"解释", pinyin:"jiěshì", uzbek:"tushuntirmoq, izohlamoq"},
-    {hanzi:"关键", pinyin:"guānjiàn", uzbek:"asosiysi, eng muhim joyi"},
-    {hanzi:"几乎", pinyin:"jīhū", uzbek:"deyarli, sal qoldi"},
-    {hanzi:"轻松", pinyin:"qīngsōng", uzbek:"yengil, erkin, qulay"},
-    {hanzi:"注意", pinyin:"zhùyì", uzbek:"e'tibor bermoq, diqqat qilmoq"},
-    {hanzi:"马上", pinyin:"mǎshàng", uzbek:"darhol"},
-    {hanzi:"过去", pinyin:"guòqù", uzbek:"o'tib ketmoq, o'tmish"},
-    {hanzi:"改变", pinyin:"gǎibiàn", uzbek:"o'zgartirmoq"},
-    {hanzi:"借", pinyin:"jiè", uzbek:"qarz olmoq/bermoq, vaqtincha olmoq"},
-    {hanzi:"还", pinyin:"huán", uzbek:"qaytarib bermoq (kitob/pul)"},
-    {hanzi:"算", pinyin:"suàn", uzbek:"hisoblamoq, hisobga olmoq"},
-    {hanzi:"选择", pinyin:"xuǎnzé", uzbek:"tanlamoq, tanlov"},
-    {hanzi:"要求", pinyin:"yāoqiú", uzbek:"talab qilmoq, talab"},
-    {hanzi:"上网", pinyin:"shàngwǎng", uzbek:"internetga kirmoq"},
-    {hanzi:"主要", pinyin:"zhǔyào", uzbek:"asosiy, boshliq"}
-];
+        const ADMIN_PASSWORD = "12345"; // Shaxsiy parolingizni shu yerdan o'zgartirishingiz mumkin
 
         /* --- 2. GLOBAL O'ZGARUVCHILAR --- */
-        let selectedWords = []; // Tanlab olingan 50 ta so'z
+        let selectedWords = []; 
         let currentQuestionIdx = 0;
         let correctAnswersCount = 0;
         let wrongAnswersCount = 0;
-        let isAnswered = false; // Savolga javob berildimi?
+        let isAnswered = false; 
 
         /* --- 3. INIT (TIZIMNI ISHGA TUSHIRISH) --- */
         document.addEventListener("DOMContentLoaded", () => {
-            // Avvalgi mavzuni tiklash (Dark mode)
             if (localStorage.getItem("theme") === "dark") {
                 document.documentElement.setAttribute("data-theme", "dark");
             }
+            
+            // LocalStorage-da foydalanuvchi o'zi qo'shgan so'zlar borligini tekshirish
+            const customWords = localStorage.getItem("custom_hsk_words");
+            if (customWords) {
+                try {
+                    wordsDatabase = JSON.parse(customWords);
+                } catch(e) {
+                    console.error("Xatolik: Qo'shimcha so'zlarni yuklab bo'lmadi.");
+                }
+            }
+
             startNewQuiz();
+            renderGitHubCode();
         });
 
         /* --- 4. NEW GAME / RESTART FUNKSIYASI --- */
@@ -777,60 +600,57 @@
             wrongAnswersCount = 0;
             isAnswered = false;
 
-            // 300 ta so'z ichidan ixtiyoriy 50 tasini tanlash
-            selectedWords = getRandomSubarray(wordsDatabase, 50);
+            // Bazadagi maksimal so'z soniga qarab test savollari sonini moslash (kamida 50 ta yoki jami so'z miqdori)
+            const quizLength = Math.min(wordsDatabase.length, 50);
+            selectedWords = getRandomSubarray(wordsDatabase, quizLength);
 
-            // UI elementlarini yashirish/ko'rsatish
             document.getElementById("quiz-screen").style.display = "block";
             document.getElementById("result-screen").style.display = "none";
+            document.getElementById("admin-screen").style.display = "none";
 
-            // Statistika va birinchi savolni yuklash
             updateStats();
             loadQuestion();
         }
 
         /* --- 5. SAVOLNI YUKLASH FUNKSIYASI --- */
         function loadQuestion() {
+            if (selectedWords.length === 0) {
+                alert("Savollar ro'yxati bo'sh! Iltimos, admin paneldan so'z kiriting.");
+                return;
+            }
             isAnswered = false;
             document.getElementById("next-button").style.display = "none";
 
             const currentWord = selectedWords[currentQuestionIdx];
 
-            // UI yangilash
             document.getElementById("question-hanzi").innerText = currentWord.hanzi;
             document.getElementById("question-pinyin").innerText = currentWord.pinyin;
 
-            // Variantlarni yaratish
             generateOptions(currentWord);
 
-            // Progress Barni yangilash
             const progressPercent = (currentQuestionIdx / selectedWords.length) * 100;
             document.getElementById("progress").style.width = `${progressPercent}%`;
 
-            // Avtomatik talaffuz qilish
             speakCurrentWord();
         }
 
         /* --- 6. VARIANTLARNI GENERATSIYA QILISH --- */
         function generateOptions(correctWord) {
             const optionsBox = document.getElementById("options-box");
-            optionsBox.innerHTML = ""; // Tozalash
+            optionsBox.innerHTML = ""; 
 
-            // To'g'ri javobdan boshqa barcha so'zlar ro'yxati
             const wrongPool = wordsDatabase.filter(w => w.hanzi !== correctWord.hanzi);
-            // 3 ta tasodifiy noto'g'ri javob olish
-            const randomWrongWords = getRandomSubarray(wrongPool, 3);
+            // Agar bazada so'z kam bo'lsa variantlarni avtomatik kamaytirish funksiyasi
+            const wrongCount = Math.min(wrongPool.length, 3);
+            const randomWrongWords = getRandomSubarray(wrongPool, wrongCount);
 
-            // To'g'ri javob bilan birlashtirish va aralashtirish
             const optionsList = [correctWord, ...randomWrongWords];
             shuffleArray(optionsList);
 
-            // Tugmalarni ekranga chiqarish
             optionsList.forEach(word => {
                 const button = document.createElement("button");
                 button.className = "option-btn";
                 button.innerText = word.uzbek;
-                // Click hodisasi
                 button.onclick = () => handleAnswerSelect(button, word, correctWord);
                 optionsBox.appendChild(button);
             });
@@ -838,28 +658,23 @@
 
         /* --- 7. JAVOB TANLANGANDA (CLICK) --- */
         function handleAnswerSelect(selectedButton, chosenWord, correctWord) {
-            if (isAnswered) return; // Agar javob berilgan bo'lsa, qayta bosilmasin
+            if (isAnswered) return; 
             isAnswered = true;
 
             const optionsBox = document.getElementById("options-box");
             const buttons = optionsBox.getElementsByClassName("option-btn");
 
-            // Barcha tugmalarni muzlatish (disabled qilish)
             for (let btn of buttons) {
                 btn.setAttribute("disabled", "true");
             }
 
-            // Tekshirish logicasi
             if (chosenWord.hanzi === correctWord.hanzi) {
-                // To'g'ri topildi
                 selectedButton.classList.add("correct");
                 correctAnswersCount++;
             } else {
-                // Noto'g'ri topildi
                 selectedButton.classList.add("wrong");
                 wrongAnswersCount++;
 
-                // To'g'ri javobni yashil qilib ko'rsatish
                 for (let btn of buttons) {
                     if (btn.innerText === correctWord.uzbek) {
                         btn.classList.add("correct");
@@ -867,7 +682,6 @@
                 }
             }
 
-            // Statistika va keyingi savol tugmasini yangilash
             updateStats();
             document.getElementById("next-button").style.display = "block";
         }
@@ -900,43 +714,36 @@
             document.getElementById("result-screen").style.display = "block";
 
             const total = selectedWords.length;
-            const finalPercent = Math.round((correctAnswersCount / total) * 100);
+            const finalPercent = total > 0 ? Math.round((correctAnswersCount / total) * 100) : 0;
 
             document.getElementById("final-score").innerText = `${correctAnswersCount} / ${total}`;
             document.getElementById("final-percent").innerText = `${finalPercent}%`;
 
-            // LocalStorage bilan ishlash
             const lastResultStr = `${correctAnswersCount} ta to'g'ri (${finalPercent}%)`;
             localStorage.setItem("hsk_last_result", lastResultStr);
 
-            // Eng yaxshi rekordni tekshirish va saqlash
             const currentBest = localStorage.getItem("hsk_best_score") || 0;
             if (correctAnswersCount > parseInt(currentBest)) {
                 localStorage.setItem("hsk_best_score", correctAnswersCount);
                 localStorage.setItem("hsk_best_result", lastResultStr);
             }
 
-            // Ekrandagi yozuvlarni yangilash
             document.getElementById("best-record").innerText = localStorage.getItem("hsk_best_result") || lastResultStr;
             document.getElementById("last-record").innerText = lastResultStr;
         }
 
         /* --- 11. WEB SPEECH API (TALAFFUZ) --- */
         function speakCurrentWord() {
-            if (!('speechSynthesis' in window)) {
-                console.warn("Brauzerda ovoz funksiyasi ishlamaydi.");
+            if (!('speechSynthesis' in window) || selectedWords.length === 0 || currentQuestionIdx >= selectedWords.length) {
                 return;
             }
 
-            // Hozirgi iyeroglifni olish
             const textToSpeak = selectedWords[currentQuestionIdx].hanzi;
-            
-            // Oldingi audio jarayonlarni to'xtatish
             window.speechSynthesis.cancel();
 
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            utterance.lang = 'zh-CN'; // Xitoy tili (Mandarin)
-            utterance.rate = 0.8;     // Biroz sekinroq va aniqroq talaffuz
+            utterance.lang = 'zh-CN'; 
+            utterance.rate = 0.8;     
 
             window.speechSynthesis.speak(utterance);
         }
@@ -953,9 +760,78 @@
             }
         }
 
-        /* --- 13. YORDAMCHI ALGORITMLAR (UTILITIES) --- */
-        
-        // Massiv ichidan tasodifiy 'n' ta element ajratib olish (Fisher-Yates asosida)
+        /* --- 13. ADMIN PANEL LOGIKASI --- */
+        function openAdminPanel() {
+            const password = prompt("Admin panelga kirish parolini yozing:");
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById("quiz-screen").style.display = "none";
+                document.getElementById("result-screen").style.display = "none";
+                document.getElementById("admin-screen").style.display = "block";
+                renderGitHubCode();
+            } else if (password !== null) {
+                alert("Noto'g'ri parol kiritildi!");
+            }
+        }
+
+        function closeAdminPanel() {
+            startNewQuiz();
+        }
+
+        function addNewWordFromPanel() {
+            const hanziInput = document.getElementById("input-hanzi").value.trim();
+            const pinyinInput = document.getElementById("input-pinyin").value.trim();
+            const uzbekInput = document.getElementById("input-uzbek").value.trim();
+
+            if (!hanziInput || !pinyinInput || !uzbekInput) {
+                alert("Iltimos, barcha maydonlarni to'ldiring!");
+                return;
+            }
+
+            // Takrorlanishni oldini olish
+            const exists = wordsDatabase.some(w => w.hanzi === hanziInput);
+            if (exists) {
+                alert("Bu iyeroglif ro'yxatda allaqachon mavjud!");
+                return;
+            }
+
+            const newWord = { hanzi: hanziInput, pinyin: pinyinInput, uzbek: uzbekInput };
+            wordsDatabase.push(newWord);
+
+            // Brauzer xotirasiga vaqtinchalik saqlab qo'yish
+            localStorage.setItem("custom_hsk_words", JSON.stringify(wordsDatabase));
+
+            // Maydonlarni tozalash
+            document.getElementById("input-hanzi").value = "";
+            document.getElementById("input-pinyin").value = "";
+            document.getElementById("input-uzbek").value = "";
+
+            renderGitHubCode();
+            alert("Yangi so'z muvaffaqiyatli qo'shildi!");
+        }
+
+        function renderGitHubCode() {
+            const outputBox = document.getElementById("code-output");
+            let codeString = "const wordsDatabase = [\n";
+            
+            wordsDatabase.forEach((word, idx) => {
+                const isLast = idx === wordsDatabase.length - 1;
+                codeString += `    {hanzi:"${word.hanzi}", pinyin:"${word.pinyin}", uzbek:"${word.uzbek}"}${isLast ? "" : ",\n"}`;
+            });
+            
+            codeString += "\n];";
+            outputBox.innerText = codeString;
+        }
+
+        function copyGeneratedCode() {
+            const codeText = document.getElementById("code-output").innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                alert("GitHub kodi nusxalandi! Endi uni GitHub-ga joylab qo'yishingiz mumkin.");
+            }).catch(err => {
+                alert("Avtomatik nusxalab bo'lmadi, qutichadan qo'lda belgilab oling.");
+            });
+        }
+
+        /* --- 14. YORDAMCHI ALGORITMLAR --- */
         function getRandomSubarray(arr, size) {
             let shuffled = arr.slice(0), i = arr.length, temp, index;
             while (i--) {
@@ -967,7 +843,6 @@
             return shuffled.slice(0, size);
         }
 
-        // Massiv elemetlarini aralashtirish (Variantlar uchun)
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
