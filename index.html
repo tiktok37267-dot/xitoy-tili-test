@@ -389,65 +389,40 @@
             color: var(--text-muted);
         }
 
-        .admin-form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .admin-input {
+        /* Kod tahrirlash qutisi */
+        .database-editor {
             width: 100%;
-            padding: 12px 15px;
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-            font-size: 1rem;
-            background: var(--card-bg);
-            color: var(--text-main);
+            height: 280px;
+            background: #1e293b;
+            color: #38bdf8;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 0.85rem;
+            font-family: 'Courier New', Courier, monospace;
+            border: 2px solid #334155;
+            margin-bottom: 14px;
+            resize: vertical;
             outline: none;
-            transition: var(--transition);
+            line-height: 1.5;
         }
 
-        [data-theme="dark"] .admin-input {
-            border-color: #334155;
-        }
-
-        .admin-input:focus {
-            border-color: var(--primary);
-        }
-
-        .admin-submit-btn {
-            background: var(--primary);
+        .admin-action-btn {
+            width: 100%;
+            background: var(--success);
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 14px;
+            border-radius: 12px;
             font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
             transition: var(--transition);
-        }
-
-        .admin-submit-btn:hover {
-            background: var(--primary-hover);
-        }
-
-        .output-box {
-            background: rgba(0,0,0,0.04);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 0.8rem;
-            max-height: 150px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            font-family: monospace;
-            border: 1px solid rgba(0,0,0,0.1);
-            color: var(--text-main);
             margin-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
         }
 
-        [data-theme="dark"] .output-box {
-            background: rgba(255,255,255,0.04);
-            border-color: rgba(255,255,255,0.1);
+        .admin-action-btn:hover {
+            opacity: 0.9;
         }
 
         .copy-code-btn {
@@ -455,8 +430,8 @@
             background: #475569;
             color: white;
             border: none;
-            padding: 10px;
-            border-radius: 10px;
+            padding: 11px;
+            border-radius: 12px;
             font-weight: 600;
             font-size: 0.9rem;
             cursor: pointer;
@@ -538,33 +513,33 @@
 
         <div id="admin-screen" class="admin-screen">
             <div class="admin-title">
-                <span>Sozlamalar (Admin)</span>
+                <span>So'zlar bazasi (Editor)</span>
                 <button class="close-admin-btn" onclick="closeAdminPanel()">✕</button>
             </div>
             
-            <div class="admin-form">
-                <input type="text" id="input-hanzi" class="admin-input" placeholder="Iyeroglif (Masalan: 猫)">
-                <input type="text" id="input-pinyin" class="admin-input" placeholder="Pinyin talaffuzi (Masalan: māo)">
-                <input type="text" id="input-uzbek" class="admin-input" placeholder="O'zbekcha tarjimasi (Masalan: mushuk)">
-                <button class="admin-submit-btn" onclick="addNewWordFromPanel()">Ro'yxatga qo'shish</button>
-            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+                Quyidagi ro'yxatni bemalol tahrirlang (qo'shing yoki o'chiring). Vergul va qavslar buzilib ketmasligiga e'tibor bering:
+            </p>
 
-            <div style="margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">GitHub uchun tayyor yangi kod:</div>
-            <div class="output-box" id="code-output"></div>
-            <button class="copy-code-btn" onclick="copyGeneratedCode()">GitHub kodini nusxalash</button>
+            <textarea class="database-editor" id="db-editor-textarea" spellcheck="false"></textarea>
+            
+            <button class="admin-action-btn" onclick="saveDatabaseChanges()">O'zgarishlarni saqlash</button>
+            <button class="copy-code-btn" onclick="copyEditorCode()">GitHub uchun kodni nusxalash</button>
         </div>
     </div>
 
     <script>
         /* --- 1. XITOYCHA SO'ZLAR BAZASI --- */
+        // Uni xohlagancha mana shu erda tahrirlashingiz, ko'paytirishingiz mumkin!
         let wordsDatabase = [
             // 1. Kishilik olmoshlari va so'roq so'zlar (16 ta)
             {hanzi:"我", pinyin:"wǒ", uzbek:"men"},
             {hanzi:"你", pinyin:"nǐ", uzbek:"sen"},
+            {hanzi:"他", pinyin:"tā", uzbek:"u (o'g'il bola)"},
             {hanzi:"主要", pinyin:"zhǔyào", uzbek:"asosiy, boshliq"}
         ];
 
-        const ADMIN_PASSWORD = "12345"; // Shaxsiy parolingizni shu yerdan o'zgartirishingiz mumkin
+        const ADMIN_PASSWORD = "12345"; 
 
         /* --- 2. GLOBAL O'ZGARUVCHILAR --- */
         let selectedWords = []; 
@@ -579,7 +554,7 @@
                 document.documentElement.setAttribute("data-theme", "dark");
             }
             
-            // LocalStorage-da foydalanuvchi o'zi qo'shgan so'zlar borligini tekshirish
+            // Mahalliy xotirada tahrirlangan eski ro'yxat bo'lsa yuklaymiz
             const customWords = localStorage.getItem("custom_hsk_words");
             if (customWords) {
                 try {
@@ -590,7 +565,6 @@
             }
 
             startNewQuiz();
-            renderGitHubCode();
         });
 
         /* --- 4. NEW GAME / RESTART FUNKSIYASI --- */
@@ -600,7 +574,6 @@
             wrongAnswersCount = 0;
             isAnswered = false;
 
-            // Bazadagi maksimal so'z soniga qarab test savollari sonini moslash (kamida 50 ta yoki jami so'z miqdori)
             const quizLength = Math.min(wordsDatabase.length, 50);
             selectedWords = getRandomSubarray(wordsDatabase, quizLength);
 
@@ -640,7 +613,6 @@
             optionsBox.innerHTML = ""; 
 
             const wrongPool = wordsDatabase.filter(w => w.hanzi !== correctWord.hanzi);
-            // Agar bazada so'z kam bo'lsa variantlarni avtomatik kamaytirish funksiyasi
             const wrongCount = Math.min(wrongPool.length, 3);
             const randomWrongWords = getRandomSubarray(wrongPool, wrongCount);
 
@@ -760,14 +732,16 @@
             }
         }
 
-        /* --- 13. ADMIN PANEL LOGIKASI --- */
+        /* --- 13. ADMIN PANEL (YANGILANGAN EDITOR LOGIKASI) --- */
         function openAdminPanel() {
             const password = prompt("Admin panelga kirish parolini yozing:");
             if (password === ADMIN_PASSWORD) {
                 document.getElementById("quiz-screen").style.display = "none";
                 document.getElementById("result-screen").style.display = "none";
                 document.getElementById("admin-screen").style.display = "block";
-                renderGitHubCode();
+                
+                // Bazani editor ichiga chiroyli matn shaklida joylashtiramiz
+                fillEditorWithDatabase();
             } else if (password !== null) {
                 alert("Noto'g'ri parol kiritildi!");
             }
@@ -777,58 +751,60 @@
             startNewQuiz();
         }
 
-        function addNewWordFromPanel() {
-            const hanziInput = document.getElementById("input-hanzi").value.trim();
-            const pinyinInput = document.getElementById("input-pinyin").value.trim();
-            const uzbekInput = document.getElementById("input-uzbek").value.trim();
-
-            if (!hanziInput || !pinyinInput || !uzbekInput) {
-                alert("Iltimos, barcha maydonlarni to'ldiring!");
-                return;
-            }
-
-            // Takrorlanishni oldini olish
-            const exists = wordsDatabase.some(w => w.hanzi === hanziInput);
-            if (exists) {
-                alert("Bu iyeroglif ro'yxatda allaqachon mavjud!");
-                return;
-            }
-
-            const newWord = { hanzi: hanziInput, pinyin: pinyinInput, uzbek: uzbekInput };
-            wordsDatabase.push(newWord);
-
-            // Brauzer xotirasiga vaqtinchalik saqlab qo'yish
-            localStorage.setItem("custom_hsk_words", JSON.stringify(wordsDatabase));
-
-            // Maydonlarni tozalash
-            document.getElementById("input-hanzi").value = "";
-            document.getElementById("input-pinyin").value = "";
-            document.getElementById("input-uzbek").value = "";
-
-            renderGitHubCode();
-            alert("Yangi so'z muvaffaqiyatli qo'shildi!");
-        }
-
-        function renderGitHubCode() {
-            const outputBox = document.getElementById("code-output");
-            let codeString = "const wordsDatabase = [\n";
-            
+        // Massivni tahrirlash uchun textarea ichiga chiroyli formatda yozish
+        function fillEditorWithDatabase() {
+            const editor = document.getElementById("db-editor-textarea");
+            let textToShow = "[\n";
             wordsDatabase.forEach((word, idx) => {
                 const isLast = idx === wordsDatabase.length - 1;
-                codeString += `    {hanzi:"${word.hanzi}", pinyin:"${word.pinyin}", uzbek:"${word.uzbek}"}${isLast ? "" : ",\n"}`;
+                textToShow += `  {hanzi: "${word.hanzi}", pinyin: "${word.pinyin}", uzbek: "${word.uzbek}"}${isLast ? "" : ",\n"}`;
             });
-            
-            codeString += "\n];";
-            outputBox.innerText = codeString;
+            textToShow += "\n]";
+            editor.value = textToShow;
         }
 
-        function copyGeneratedCode() {
-            const codeText = document.getElementById("code-output").innerText;
-            navigator.clipboard.writeText(codeText).then(() => {
-                alert("GitHub kodi nusxalandi! Endi uni GitHub-ga joylab qo'yishingiz mumkin.");
-            }).catch(err => {
-                alert("Avtomatik nusxalab bo'lmadi, qutichadan qo'lda belgilab oling.");
-            });
+        // Tahrirlangan matnni qayta JavaScript massiviga aylantirib saqlash
+        function saveDatabaseChanges() {
+            const editorValue = document.getElementById("db-editor-textarea").value.trim();
+            
+            try {
+                // Matn ko'rinishidagi massivni xavfsiz o'qib olish funksiyasi
+                // eval ishlatish matnli JS formatini to'g'ridan-to'g'ri massivga o'girish uchun qulay
+                const parsedData = eval(editorValue);
+                
+                if (Array.isArray(parsedData)) {
+                    wordsDatabase = parsedData;
+                    // Mahalliy brauzer xotirasiga saqlaymiz
+                    localStorage.setItem("custom_hsk_words", JSON.stringify(wordsDatabase));
+                    alert("O'zgarishlar muvaffaqiyatli saqlandi! Testlar ro'yxati yangilandi.");
+                } else {
+                    alert("Xatolik: Kiritilgan ma'lumot to'g'ri massiv (Ro'yxat) formatida emas!");
+                }
+            } catch (err) {
+                alert("Sintaktik xatolik! Iltimos, qavslar, qo'shtirnoqlar yoki vergullarni to'g'ri qo'yganingizni tekshiring.\n\nBatafsil xatolik: " + err.message);
+            }
+        }
+
+        // GitHub sahifasiga butunlay almashtirib qo'yish uchun tayyor kodni nusxalash
+        function copyEditorCode() {
+            const editor = document.getElementById("db-editor-textarea");
+            editor.select();
+            editor.setSelectionRange(0, 99999);
+
+            try {
+                const successful = document.execCommand('copy');
+                if(successful) {
+                    alert("Massiv kodi nusxalandi! Uni index.html faylingizdagi 'let wordsDatabase = ...' qismiga qo'yishingiz mumkin.");
+                } else {
+                    alert("Avtomatik nusxalab bo'lmadi, qutidan o'zingiz belgilab nusxalab oling.");
+                }
+            } catch (err) {
+                navigator.clipboard.writeText(editor.value).then(() => {
+                    alert("Kod nusxalandi!");
+                }).catch(e => {
+                    alert("Qutichadagi matnni sichqoncha bilan belgilab nusxalab (Copy) oling.");
+                });
+            }
         }
 
         /* --- 14. YORDAMCHI ALGORITMLAR --- */
