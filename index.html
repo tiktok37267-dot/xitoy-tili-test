@@ -733,16 +733,7 @@
         }
 
         /* --- 13. ADMIN PANEL (YANGILANGAN EDITOR LOGIKASI) --- */
-        function openAdminPanel() {
-            const password = prompt("Admin panelga kirish parolini yozing:");
-            if (password === ADMIN_PASSWORD) {
-                document.getElementById("quiz-screen").style.display = "none";
-                document.getElementById("result-screen").style.display = "none";
-                document.getElementById("admin-screen").style.display = "block";
-                
-                // Bazani editor ichiga chiroyli matn shaklida joylashtiramiz
-                fillEditorWithDatabase();
-            } else if (password !== null) {
+         else if (password !== null) {
                 alert("Noto'g'ri parol kiritildi!");
             }
         }
