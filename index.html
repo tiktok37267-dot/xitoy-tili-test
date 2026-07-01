@@ -732,10 +732,14 @@
             }
         }
 
-        /* --- 13. ADMIN PANEL (YANGILANGAN EDITOR LOGIKASI) --- */
-         else if (password !== null) {
-                alert("Noto'g'ri parol kiritildi!");
-            }
+        /* --- 13. ADMIN PANEL (PAROLSIZ - TO'G'RIDAN-TO'G'RI OCHILADI) --- */
+        function openAdminPanel() {
+            // Parol so'ramaydi, shundoq panelni ochadi
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("admin-screen").style.display = "block";
+            
+            fillEditorWithDatabase();
         }
 
         function closeAdminPanel() {
@@ -760,7 +764,6 @@
             
             try {
                 // Matn ko'rinishidagi massivni xavfsiz o'qib olish funksiyasi
-                // eval ishlatish matnli JS formatini to'g'ridan-to'g'ri massivga o'girish uchun qulay
                 const parsedData = eval(editorValue);
                 
                 if (Array.isArray(parsedData)) {
