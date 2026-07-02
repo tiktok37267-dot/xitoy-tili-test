@@ -704,42 +704,52 @@
             document.getElementById("last-record").innerText = lastResultStr;
         }
 
-        /* --- 11. WEB SPEECH API (TALAFFUZ) --- */
-        /* --- 11. WEB SPEECH API (TALAFFUZI KUCHAYTIRILGAN) --- */
+        /* --- 11. WEB SPEECH API (TELEFONLAR UCHUN OPTIMIZATSIYA) --- */
         function speakCurrentWord() {
             if (!('speechSynthesis' in window) || selectedWords.length === 0 || currentQuestionIdx >= selectedWords.length) {
                 return;
             }
 
             const textToSpeak = selectedWords[currentQuestionIdx].hanzi;
-            window.speechSynthesis.cancel(); // Avvalgi ovozni to'xtatish
+            
+            // Mobil brauzerlarda navbat chalkashmasligi uchun avval hammasini to'xtatamiz
+            window.speechSynthesis.cancel(); 
 
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            
+            // Xitoy tili standartini o'rnatamiz
+            utterance.lang = 'zh-CN';
+            
+            // Telefon tizimidagi ovozlarni tekshirish
             const voices = window.speechSynthesis.getVoices();
-            const zhVoices = voices.filter(v => v.lang.includes('zh'));
+            const zhVoices = voices.filter(v => v.lang.includes('zh') || v.lang.includes('ZH'));
 
             if (zhVoices.length > 0) {
-                // Tabiiy, eng chiroyli ovozlarni saralab olish
+                // Telefon qo'llab-quvvatlaydigan eng yaxshi ovozini tanlash
                 const premiumVoice = zhVoices.find(v => 
                     v.name.includes('Xiaoxiao') || 
                     v.name.includes('Natural') || 
-                    v.name.includes('Premium') || 
                     v.name.includes('Google')
                 );
                 utterance.voice = premiumVoice || zhVoices[0];
-            } else {
-                utterance.lang = 'zh-CN';
             }
 
-            utterance.rate = 0.75; // Aniq eshitilishi uchun biroz sekinlashtirilgan tezlik
-            window.speechSynthesis.speak(utterance);
+            utterance.rate = 0.75; // Tezlik
+            
+            // Faqatgina brauzer tayyor bo'lganda ijro etish
+            setTimeout(() => {
+                window.speechSynthesis.speak(utterance);
+            }, 50);
         }
 
-        // Brauzer ovozlar ro'yxatini yuklashi uchun zaxira hodisa
+        // Telefon yuklanganda ovozlar ro'yxatini xotiraga olishini ta'minlash
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                window.speechSynthesis.getVoices();
-            };
+            window.speechSynthesis.getVoices();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = () => {
+                    window.speechSynthesis.getVoices();
+                };
+            }
         }
 
         /* --- 12. DARK / LIGHT MODE REJIMINI O'ZGARTIRISH --- */
