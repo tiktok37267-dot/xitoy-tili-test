@@ -705,19 +705,41 @@
         }
 
         /* --- 11. WEB SPEECH API (TALAFFUZ) --- */
+        /* --- 11. WEB SPEECH API (TALAFFUZI KUCHAYTIRILGAN) --- */
         function speakCurrentWord() {
             if (!('speechSynthesis' in window) || selectedWords.length === 0 || currentQuestionIdx >= selectedWords.length) {
                 return;
             }
 
             const textToSpeak = selectedWords[currentQuestionIdx].hanzi;
-            window.speechSynthesis.cancel();
+            window.speechSynthesis.cancel(); // Avvalgi ovozni to'xtatish
 
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            utterance.lang = 'zh-CN'; 
-            utterance.rate = 0.8;     
+            const voices = window.speechSynthesis.getVoices();
+            const zhVoices = voices.filter(v => v.lang.includes('zh'));
 
+            if (zhVoices.length > 0) {
+                // Tabiiy, eng chiroyli ovozlarni saralab olish
+                const premiumVoice = zhVoices.find(v => 
+                    v.name.includes('Xiaoxiao') || 
+                    v.name.includes('Natural') || 
+                    v.name.includes('Premium') || 
+                    v.name.includes('Google')
+                );
+                utterance.voice = premiumVoice || zhVoices[0];
+            } else {
+                utterance.lang = 'zh-CN';
+            }
+
+            utterance.rate = 0.75; // Aniq eshitilishi uchun biroz sekinlashtirilgan tezlik
             window.speechSynthesis.speak(utterance);
+        }
+
+        // Brauzer ovozlar ro'yxatini yuklashi uchun zaxira hodisa
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
         }
 
         /* --- 12. DARK / LIGHT MODE REJIMINI O'ZGARTIRISH --- */
